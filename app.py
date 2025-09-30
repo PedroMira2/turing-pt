@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 app.secret_key = 'turing_test_secret_key_2024'
 
-# Inicializa o modelo (vai baixar na primeira execução)
+
 print("🚀 Carregando modelo de IA...")
 try:
     chatbot = pipeline(
@@ -49,7 +49,7 @@ def get_ai_response(user_message):
         return "Estou com problemas técnicos. Podemos continuar mais tarde?"
     
     try:
-        # Limita o tamanho da entrada para evitar problemas
+      
         if len(user_message) > 500:
             user_message = user_message[:500]
         
@@ -63,14 +63,14 @@ def get_ai_response(user_message):
             repetition_penalty=1.1
         )
         
-        # Limpa a resposta
+       
         ai_response = response[0]['generated_text'].strip()
         
-        # Remove a mensagem do usuário da resposta se estiver incluída
+     
         if user_message in ai_response:
             ai_response = ai_response.replace(user_message, "").strip()
         
-        # Garante que a resposta não esteja vazia
+    
         if not ai_response or len(ai_response) < 2:
             ai_response = "Interessante! Pode me contar mais sobre isso?"
             
@@ -174,4 +174,5 @@ def new_session():
     return jsonify({'status': 'Nova sessão iniciada'})
 
 if __name__ == '__main__':
+
     app.run(debug=True, host='0.0.0.0', port=5000)
