@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IA vs Humano - Teste de Turing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-900: #0f172a;
+            --correct-color: #10b981;
+            --wrong-color: #ef4444;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 12px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .app {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 24px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .app {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .description {
+            color: var(--gray-700);
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        
+        /* Stats Styles */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            min-width: 140px;
+            transition: var(--transition);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray-500);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Panel Styles */
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+        }
+        
+        .panel-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-header h2 i {
+            font-size: 1.3rem;
+        }
+        
+        .panel-content {
+            padding: 24px;
+        }
+        
+        /* Questions Panel */
+        .questions-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .question-btn {
+            background-color: var(--gray-100);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            padding: 16px;
+            cursor: pointer;
+            text-align: left;
+            transition: var(--transition);
+            font-weight: 500;
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .question-btn:hover {
+            background-color: white;
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .question-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .question-btn i {
+            font-size: 1.1rem;
+        }
+        
+        /* Game Area */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .question-display {
+            margin-bottom: 24px;
+            padding: 24px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .question-text {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            margin-bottom: 10px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .question-instruction {
+            color: var(--gray-500);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .answers-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-grow: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .answers-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .answer-card {
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius);
+            padding: 24px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .answer-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .answer-card.selected {
+            border-color: var(--accent-color);
+            background-color: rgba(245, 158, 11, 0.05);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .answer-label {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            background: var(--gray-100);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .answer-text {
+            flex-grow: 1;
+            line-height: 1.7;
+            color: var(--gray-700);
+            font-size: 1.05rem;
+        }
+        
+        /* Result Container */
+        .result-container {
+            text-align: center;
+            padding: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: none;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .result-container.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 2px solid var(--correct-color);
+            color: var(--correct-color);
+            display: block;
+        }
+        
+        .result-container.wrong {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 2px solid var(--wrong-color);
+            color: var(--wrong-color);
+            display: block;
+        }
+        
+        .result-text {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .revealed-answer {
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--gray-500), var(--gray-700));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-reset:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: var(--shadow-sm) !important;
+        }
+        
+        /* Educational Section */
+        .educational-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+        }
+        
+        .educational-section.active {
+            display: block;
+        }
+        
+        .educational-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .educational-header h2 {
+            font-size: 2rem;
+            color: var(--primary-dark);
+            margin-bottom: 10px;
+        }
+        
+        .educational-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .educational-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .educational-card {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border-top: 4px solid var(--primary-color);
+        }
+        
+        .educational-card h3 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .educational-card p {
+            margin-bottom: 15px;
+            line-height: 1.7;
+            color: var(--gray-700);
+        }
+        
+        .btn-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: var(--transition);
+        }
+        
+        .btn-link:hover {
+            color: var(--primary-dark);
+            gap: 12px;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--gray-500);
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        /* Utility Classes */
+        .hidden {
+            display: none;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .mt-4 {
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="fade-in">
+            <h1>IA vs Humano - Teste de Turing</h1>
+            <p class="description">Consegues distinguir entre respostas escritas por IA e por humanos? Testa as tuas habilidades neste desafio interativo baseado no conceito do Teste de Turing.</p>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-value" id="attempts">0</div>
+                    <div class="stat-label">Tentativas</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="wins">0</div>
+                    <div class="stat-label">Acertos</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="percentage">0%</div>
+                    <div class="stat-label">Percentagem</div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progress-bar"></div>
+                </div>
+                <div class="progress-text">
+                    <span>Progresso: <span id="current-progress">0</span>/<span id="total-questions">0</span></span>
+                    <span id="progress-percent">0%</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="app">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-question-circle"></i> Perguntas</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="questions-list" id="questions-list">
+                        <!-- As perguntas serão carregadas aqui via JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel game-area">
+                <div class="panel-header">
+                    <h2><i class="fas fa-gamepad"></i> Jogo</h2>
+                </div>
+                <div class="panel-content">
+                    <div class="question-display">
+                        <h2 class="question-text" id="current-question">Seleciona uma pergunta para começar</h2>
+                        <p class="question-instruction"><i class="fas fa-info-circle"></i> Lê as duas respostas e seleciona qual achas que foi escrita pela IA</p>
+                    </div>
+                    
+                    <div class="result-container" id="result-container">
+                        <div class="result-text" id="result-text"></div>
+                        <div class="revealed-answer" id="revealed-answer"></div>
+                    </div>
+                    
+                    <div class="answers-container" id="answers-container">
+                        <!-- As respostas serão carregadas aqui via JavaScript -->
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="submit-btn" disabled>
+                            <i class="fas fa-paper-plane"></i> Submeter Resposta
+                        </button>
+                        <button class="btn btn-secondary" id="next-btn" disabled>
+                            <i class="fas fa-arrow-right"></i> Próxima Pergunta
+                        </button>
+                        <button class="btn btn-reset" id="reset-btn">
+                            <i class="fas fa-redo"></i> Reiniciar Jogo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="educational-section" id="educational-section">
+            <div class="educational-header">
+                <h2>Explorando a Inteligência Artificial</h2>
+                <p>Descobre mais sobre as origens da IA e o trabalho revolucionário de Alan Turing</p>
+            </div>
+            
+            <div class="educational-content">
+                <div class="educational-card">
+                    <h3><i class="fas fa-robot"></i> O que é Inteligência Artificial?</h3>
+                    <p>A Inteligência Artificial (IA) é um campo da ciência da computação dedicado à criação de sistemas capazes de realizar tarefas que normalmente exigiriam inteligência humana. Isso inclui aprendizagem, raciocínio, perceção, resolução de problemas e compreensão de linguagem natural.</p>
+                    <p>As IAs modernas, como os modelos de linguagem grande (LLMs), são treinadas em enormes quantidades de dados textuais, permitindo-lhes gerar respostas coerentes e contextualmente relevantes para uma ampla gama de perguntas.</p>
+                    <a href="https://pt.wikipedia.org/wiki/Intelig%C3%AAncia_artificial" class="btn-link" target="_blank">
+                        Saber mais sobre IA <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+                
+                <div class="educational-card">
+                    <h3><i class="fas fa-user-graduate"></i> Alan Turing e seu Legado</h3>
+                    <p>Alan Turing (1912-1954) foi um matemático, lógico e criptoanalista britânico, amplamente considerado o pai da ciência da computação e da inteligência artificial. Durante a Segunda Guerra Mundial, trabalhou na descriptografia de mensagens alemãs, contribuindo significativamente para o esforço de guerra aliado.</p>
+                    <p>Em 1950, Turing publicou "Computing Machinery and Intelligence", onde propôs o que ficou conhecido como "Teste de Turing" - um método para determinar se uma máquina pode exibir comportamento inteligente equivalente ou indistinguível do de um humano.</p>
+                    <a href="https://courses.cs.umbc.edu/471/papers/turing.pdf" class="btn-link" target="_blank">
+                        Ler o artigo de Turing <i class="fas fa-external-link-alt"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-primary" id="back-to-game-btn">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Jogo
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Desenvolvido para explorar os limites entre inteligência artificial e humana • Inspirado no Teste de Turing</p>
+        </footer>
+    </div>
+
+    <script>
+        // Base de dados de perguntas e respostas
+        const qaPairs = {
+            "O que é a fotossíntese?": {
+                human: "A fotossíntese é o processo pelo qual as plantas transformam luz solar, dióxido de carbono e água em alimento (açúcares) e oxigênio. É essencial para a vida na Terra porque produz o oxigênio que respiramos. Sem as plantas e este processo, a vida como a conhecemos não seria possível.",
+                ai: "A fotossíntese é um processo bioquímico realizado por plantas, algas e algumas bactérias que converte energia luminosa em energia química. Através da reação 6CO₂ + 6H₂O + luz → C₆H₁₂O₆ + 6O₂, organismos fotossintetizantes produzem glicose e liberam oxigênio como subproduto. Este processo ocorre nos cloroplastos, especificamente nos tilacoides, onde pigmentos como a clorofila capturam fótons de luz."
+            },
+            "Por que o céu é azul?": {
+                human: "O céu é azul porque a luz do sol se espalha ao passar pela atmosfera da Terra. As moléculas de ar espalham mais a luz azul do que outras cores, então é essa cor que vemos quando olhamos para o céu durante o dia. Às vezes, no pôr do sol, o céu fica alaranjado ou vermelho porque a luz tem que atravessar mais atmosfera e as cores azuis já se espalharam completamente.",
+                ai: "O fenômeno da coloração azul do céu resulta do espalhamento de Rayleigh, onde partículas na atmosfera dispersam seletivamente comprimentos de onda mais curtos (azul e violeta) da luz solar. Como nossos olhos são mais sensíveis ao azul do que ao violeta, percebemos o céu predominantemente azul. Durante o pôr do sol, o caminho mais longo da luz através da atmosfera resulta em maior dispersão dos comprimentos de onda mais curtos, permitindo que os mais longos (vermelho e laranja) dominem a percepção visual."
+            },
+            "Qual a importância da reciclagem?": {
+                human: "Reciclar é importante porque ajuda a reduzir a quantidade de lixo que vai para aterros sanitários, conserva recursos naturais como árvores e minerais, e economiza energia. Além disso, diminui a poluição e protege os habitats de animais. Quando reciclamos, estamos a dar uma nova vida aos materiais em vez de os deitar fora, o que é melhor para o planeta.",
+                ai: "A reciclagem apresenta benefícios ambientais e econômicos significativos: reduz a extração de recursos virgens, diminui o consumo energético em processos de produção (ex: reciclar alumínio economiza 95% da energia versus produção primária), minimiza a deposição em aterros e mitiga emissões de gases de efeito estufa associadas à decomposição e produção de novos materiais. Adicionalmente, promove economia circular, reduz poluição do solo e água, e conserva biodiversidade através da menor perturbação de ecossistemas."
+            },
+            "Como funciona a internet?": {
+                human: "A internet funciona conectando computadores em todo o mundo através de cabos e sinais sem fio. Quando acessas um site, o teu computador envia um pedido através da rede, que é encaminhado até ao servidor onde o site está guardado, e então recebes a informação de volta. É como uma enorme rede de estradas por onde viajam os dados, com sinais de trânsito (roteadores) que os direcionam para os destinos certos.",
+                ai: "A internet opera através do protocolo TCP/IP, estabelecendo comunicação entre dispositivos via endereços IP únicos. Dados são divididos em pacotes, roteados por roteadores através de caminhos ótimos, e remontados no destino. DNS traduz nomes de domínio para endereços IP, enquanto protocolos como HTTP/HTTPS gerenciam a transferência de conteúdo entre clientes e servidores. A infraestrutura inclui cabos de fibra ótica, satélites, redes wireless e sistemas de comutação que garantem a entrega robusta de informação através desta rede global descentralizada."
+            },
+            "O que causa as estações do ano?": {
+                human: "As estações do ano são causadas pela inclinação do eixo da Terra enquanto ela orbita o Sol. Dependendo da posição da Terra na sua órbita, diferentes partes do planeta recebem mais ou menos luz solar direta, criando as estações. Quando é verão no hemisfério norte, é inverno no hemisfério sul, e vice-versa.",
+                ai: "As estações resultam da inclinação axial de 23,5° da Terra combinada com sua revolução orbital anual. Esta inclinação causa variação na incidência solar em diferentes latitudes ao longo do ano. Quando o hemisfério norte está inclinado para o Sol, experimenta verão, enquanto o hemisfério sul tem inverno, situação que se inverte seis meses depois. A variação no ângulo de incidência solar afeta a intensidade da radiação recebida por unidade de área superficial, determinando padrões climáticos sazonais."
+            },
+            "Por que os aviões conseguem voar?": {
+                human: "Os aviões voam devido ao formato das suas asas, que criam uma diferença de pressão. O ar flui mais rápido sobre a parte superior da asa, criando menos pressão, enquanto o ar mais lento embaixo cria mais pressão, empurrando a asa para cima (sustentação). Os motores fornecem o impulso necessário para se moverem para a frente através do ar.",
+                ai: "O voo de aeronaves é possibilitado pelo princípio de Bernoulli e pela terceira lei de Newton. O perfil aerodinâmico das asas gera sustentação através da diferença de pressão: o fluxo de ar acelerado sobre a superfície superior cria região de baixa pressão, enquanto o fluxo mais lento na superfície inferior mantém pressão mais alta. A combinação desta sustentação com o empuxo dos motores supera o peso e a resistência aerodinâmica. Controles de voo como ailerons, leme e profundores permitem manobras tridimensionais através da modificação das forças aerodinâmicas."
+            }
+        };
+
+        // Estado do jogo
+        let gameState = {
+            currentQuestion: null,
+            answers: [],
+            selectedAnswer: null,
+            result: null,
+            stats: {
+                attempts: 0,
+                wins: 0,
+                percentage: 0
+            },
+            answeredQuestions: new Set(),
+            totalQuestions: Object.keys(qaPairs).length
+        };
+
+        // Elementos DOM
+        const questionsList = document.getElementById('questions-list');
+        const currentQuestionElement = document.getElementById('current-question');
+        const answersContainer = document.getElementById('answers-container');
+        const resultContainer = document.getElementById('result-container');
+        const resultText = document.getElementById('result-text');
+        const revealedAnswer = document.getElementById('revealed-answer');
+        const submitBtn = document.getElementById('submit-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const attemptsElement = document.getElementById('attempts');
+        const winsElement = document.getElementById('wins');
+        const percentageElement = document.getElementById('percentage');
+        const progressBar = document.getElementById('progress-bar');
+        const currentProgressElement = document.getElementById('current-progress');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const progressPercentElement = document.getElementById('progress-percent');
+        const educationalSection = document.getElementById('educational-section');
+        const backToGameBtn = document.getElementById('back-to-game-btn');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeStats();
+            renderQuestions();
+            setupEventListeners();
+            updateProgress();
+        });
+
+        // Inicializar estatísticas
+        function initializeStats() {
+            const savedStats = localStorage.getItem('iaVsHumanStats');
+            
+            if (savedStats) {
+                // Se existem estatísticas salvas, carregá-las
+                const parsedStats = JSON.parse(savedStats);
+                
+                // Verificar se as estatísticas são válidas (não corrompidas)
+                if (parsedStats && typeof parsedStats.attempts === 'number' && 
+                    typeof parsedStats.wins === 'number' && typeof parsedStats.percentage === 'number') {
+                    gameState.stats = parsedStats;
+                } else {
+                    // Se as estatísticas estão corrompidas, reiniciar
+                    resetStatsToZero();
+                }
+            } else {
+                // Se não existem estatísticas salvas, inicializar com zero
+                resetStatsToZero();
+            }
+            
+            updateStatsDisplay();
+        }
+
+        // Resetar estatísticas para zero
+        function resetStatsToZero() {
+            gameState.stats = {
+                attempts: 0,
+                wins: 0,
+                percentage: 0
+            };
+            saveStats();
+        }
+
+        // Guardar estatísticas no localStorage
+        function saveStats() {
+            localStorage.setItem('iaVsHumanStats', JSON.stringify(gameState.stats));
+        }
+
+        // Atualizar display das estatísticas
+        function updateStatsDisplay() {
+            attemptsElement.textContent = gameState.stats.attempts;
+            winsElement.textContent = gameState.stats.wins;
+            percentageElement.textContent = gameState.stats.percentage + '%';
+        }
+
+        // Atualizar barra de progresso
+        function updateProgress() {
+            totalQuestionsElement.textContent = gameState.totalQuestions;
+            currentProgressElement.textContent = gameState.answeredQuestions.size;
+            
+            const progressPercent = Math.round((gameState.answeredQuestions.size / gameState.totalQuestions) * 100);
+            progressBar.style.width = progressPercent + '%';
+            progressPercentElement.textContent = progressPercent + '%';
+            
+            // Mostrar seção educacional quando todas as perguntas forem respondidas
+            if (gameState.answeredQuestions.size === gameState.totalQuestions && gameState.totalQuestions > 0) {
+                setTimeout(() => {
+                    educationalSection.classList.add('active');
+                }, 1500);
+            }
+        }
+
+        // Renderizar lista de perguntas
+        function renderQuestions() {
+            questionsList.innerHTML = '';
+            Object.keys(qaPairs).forEach(question => {
+                const button = document.createElement('button');
+                button.className = 'question-btn';
+                if (gameState.answeredQuestions.has(question)) {
+                    button.innerHTML = `<i class="fas fa-check-circle"></i> ${question}`;
+                } else {
+                    button.innerHTML = `<i class="far fa-circle"></i> ${question}`;
+                }
+                button.addEventListener('click', () => selectQuestion(question));
+                questionsList.appendChild(button);
+            });
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            submitBtn.addEventListener('click', submitAnswer);
+            nextBtn.addEventListener('click', nextQuestion);
+            resetBtn.addEventListener('click', resetStats);
+            backToGameBtn.addEventListener('click', () => {
+                educationalSection.classList.remove('active');
+            });
+        }
+
+        // Selecionar uma pergunta
+        function selectQuestion(question) {
+            // Atualizar botões ativos
+            document.querySelectorAll('.question-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.includes(question)) {
+                    btn.classList.add('active');
+                }
+            });
+
+            gameState.currentQuestion = question;
+            currentQuestionElement.textContent = question;
+
+            // Embaralhar e exibir respostas
+            const responses = qaPairs[question];
+            gameState.answers = shuffleAnswers(responses.human, responses.ai);
+            renderAnswers();
+
+            // Resetar estado do jogo para nova pergunta
+            gameState.selectedAnswer = null;
+            gameState.result = null;
+            resultContainer.className = 'result-container';
+            resultContainer.style.display = 'none';
+
+            // Atualizar botões
+            submitBtn.disabled = true;
+            nextBtn.disabled = !gameState.answeredQuestions.has(question);
+        }
+
+        // Embaralhar respostas (A e B)
+        function shuffleAnswers(humanAnswer, aiAnswer) {
+            const isAIAFirst = Math.random() < 0.5;
+            
+            return [
+                {
+                    text: isAIAFirst ? aiAnswer : humanAnswer,
+                    isAI: isAIAFirst,
+                    label: 'A'
+                },
+                {
+                    text: isAIAFirst ? humanAnswer : aiAnswer,
+                    isAI: !isAIAFirst,
+                    label: 'B'
+                }
+            ];
+        }
+
+        // Renderizar respostas
+        function renderAnswers() {
+            answersContainer.innerHTML = '';
+            
+            gameState.answers.forEach(answer => {
+                const answerCard = document.createElement('div');
+                answerCard.className = 'answer-card';
+                answerCard.innerHTML = `
+                    <div class="answer-header">
+                        <div class="answer-label">${answer.label}</div>
+                    </div>
+                    <div class="answer-text">${answer.text}</div>
+                `;
+                
+                answerCard.addEventListener('click', () => selectAnswer(answer.label));
+                answersContainer.appendChild(answerCard);
+            });
+        }
+
+        // Selecionar uma resposta
+        function selectAnswer(answerLabel) {
+            // Remover seleção anterior
+            document.querySelectorAll('.answer-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Selecionar nova resposta
+            const selectedCard = Array.from(document.querySelectorAll('.answer-card'))
+                .find(card => card.querySelector('.answer-label').textContent === answerLabel);
+            
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+                gameState.selectedAnswer = answerLabel;
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Submeter resposta
+        function submitAnswer() {
+            if (!gameState.selectedAnswer) return;
+            
+            const selectedAnswer = gameState.answers.find(a => a.label === gameState.selectedAnswer);
+            const isCorrect = selectedAnswer.isAI;
+            
+            // Atualizar estatísticas
+            gameState.stats.attempts++;
+            if (isCorrect) {
+                gameState.stats.wins++;
+            }
+            gameState.stats.percentage = Math.round((gameState.stats.wins / gameState.stats.attempts) * 100);
+            
+            // Marcar pergunta como respondida
+            gameState.answeredQuestions.add(gameState.currentQuestion);
+            
+            // Mostrar resultado
+            resultContainer.className = isCorrect ? 'result-container correct' : 'result-container wrong';
+            resultText.innerHTML = isCorrect 
+                ? '<i class="fas fa-check-circle"></i> Correto! Identificaste a IA.' 
+                : '<i class="fas fa-times-circle"></i> Incorreto! Esta era a resposta humana.';
+            
+            // Revelar qual era a IA
+            const aiAnswer = gameState.answers.find(a => a.isAI);
+            revealedAnswer.textContent = `A Resposta ${aiAnswer.label} foi escrita pela IA.`;
+            
+            resultContainer.style.display = 'block';
+            
+            // Atualizar botões
+            submitBtn.disabled = true;
+            nextBtn.disabled = false;
+            
+            // Atualizar interface
+            renderQuestions();
+            updateProgress();
+            
+            // Guardar estatísticas
+            saveStats();
+            updateStatsDisplay();
+        }
+
+        // Próxima pergunta
+        function nextQuestion() {
+            // Encontrar próxima pergunta não respondida
+            const unansweredQuestions = Object.keys(qaPairs).filter(
+                question => !gameState.answeredQuestions.has(question)
+            );
+            
+            if (unansweredQuestions.length > 0) {
+                // Selecionar uma pergunta não respondida aleatoriamente
+                const randomIndex = Math.floor(Math.random() * unansweredQuestions.length);
+                selectQuestion(unansweredQuestions[randomIndex]);
+            } else {
+                // Todas as perguntas foram respondidas
+                selectQuestion(Object.keys(qaPairs)[0]);
+                nextBtn.disabled = true;
+            }
+        }
+
+        // Resetar estatísticas
+        function resetStats() {
+            if (confirm('Tens a certeza que queres reiniciar todas as estatísticas?')) {
+                gameState.stats = {
+                    attempts: 0,
+                    wins: 0,
+                    percentage: 0
+                };
+                
+                gameState.answeredQuestions.clear();
+                
+                saveStats();
+                updateStatsDisplay();
+                updateProgress();
+                renderQuestions();
+                
+                // Limpar seleção de pergunta
+                document.querySelectorAll('.question-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                currentQuestionElement.textContent = 'Seleciona uma pergunta para começar';
+                answersContainer.innerHTML = '';
+                resultContainer.style.display = 'none';
+                
+                submitBtn.disabled = true;
+                nextBtn.disabled = true;
+                
+                // Esconder seção educacional
+                educationalSection.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
